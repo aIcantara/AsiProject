@@ -61,8 +61,7 @@ std::optional<HRESULT> D3D9Lost(const decltype(ResetHook)& hook, IDirect3DDevice
     return std::nullopt;
 }
 
-void D3D9Reset(const decltype(ResetHook)& hook, HRESULT& return_value, IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* pPresentParams) {
-}
+void D3D9Reset(const decltype(ResetHook)& hook, HRESULT& return_value, IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* pPresentParams) {}
 
 void setD3D9Hooks() {
     DWORD pDevice = *reinterpret_cast<DWORD*>(0xC97C28);
@@ -89,8 +88,7 @@ void CTimer__Update(const decltype(CTimerHook)& hook) {
     hook.get_trampoline()();
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
-{
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
     switch (ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:
         CTimerHook.set_dest(0x561B10);
