@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 project(AsiProject)
 
 set(USE_KTHOOK ON)
-set(USE_RAKHOOK OFF)
+set(USE_RAKHOOK ON)
 set(USE_SAMPAPI ON)
 set(USE_PLUGINSDK OFF)
 set(USE_IMGUI OFF)
@@ -23,15 +23,12 @@ add_library(${PROJECT_NAME} SHARED ${PROJECT_HEADERS} ${PROJECT_SOURCE_HEADERS} 
 include(FetchContent)
 
 if (USE_KTHOOK)
-    FetchContent_Declare(kthook GIT_REPOSITORY https://github.com/kin4stat/kthook.git GIT_TAG 910feafb338e0605922c2aaa38dd471eabef4264 SOURCE_DIR ${CMAKE_BINARY_DIR}/kthook)
-
-    FetchContent_MakeAvailable(kthook)
-
-    include_directories(${CMAKE_BINARY_DIR}/kthook)
-    include_directories(${CMAKE_BINARY_DIR}/kthook/include)
-    include_directories(${CMAKE_BINARY_DIR}/kthook/ktsignal/include)
-    include_directories(${CMAKE_BINARY_DIR}/kthook/xbyak)
-
+    FetchContent_Declare(xbyak GIT_REPOSITORY https://github.com/herumi/xbyak.git GIT_TAG ce083a0dcc306c1717685a81f577a4e050193919 SOURCE_DIR ${CMAKE_BINARY_DIR}/xbyak)
+    FetchContent_Declare(ktsignal GIT_REPOSITORY https://github.com/kin4stat/ktsignal.git GIT_TAG f08a19d9a00ad5284871bf44178d835da7b26ebf SOURCE_DIR ${CMAKE_BINARY_DIR}/ktsignal)
+    FetchContent_Declare(kthook GIT_REPOSITORY https://github.com/kin4stat/kthook.git GIT_TAG 21ca70481273d1efcc98ca49063178e46277009b SOURCE_DIR ${CMAKE_BINARY_DIR}/kthook)
+ 
+    FetchContent_MakeAvailable(xbyak ktsignal kthook)
+ 
     target_link_libraries(${PROJECT_NAME} PUBLIC kthook)
 endif ()
 
