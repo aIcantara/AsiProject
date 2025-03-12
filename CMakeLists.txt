@@ -78,6 +78,8 @@ if (USE_IMGUI)
     aux_source_directory(${CMAKE_BINARY_DIR}/imgui ${PROJECT_NAME}_LIST)
     list(APPEND ${PROJECT_NAME}_LIST "${CMAKE_BINARY_DIR}/imgui/backends/imgui_impl_win32.cpp")
     list(APPEND ${PROJECT_NAME}_LIST "${CMAKE_BINARY_DIR}/imgui/backends/imgui_impl_dx9.cpp")
+
+    target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_LIST})
 endif ()
 
 if (USE_DXSDK)
