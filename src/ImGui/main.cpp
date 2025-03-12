@@ -43,9 +43,7 @@ std::optional<HRESULT> D3D9Present(const decltype(PresentHook)& hook, IDirect3DD
     if (ImGuiEnable) {
         ImGui::SetNextWindowPos(ImVec2(100.f, 100.f), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300.f, 100.f), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Plugin Menu", &ImGuiEnable);
-
-        ImGui::Text("Text");
+        ImGui::Begin("AsiProject", &ImGuiEnable);
 
         ImGui::End();
     }

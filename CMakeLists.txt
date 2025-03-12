@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.25)
-
 project(AsiProject)
 
 set(USE_KTHOOK ON)
@@ -15,7 +14,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-add_library(${PROJECT_NAME} SHARED)
+file(GLOB_RECURSE PROJECT_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+file(GLOB_RECURSE PROJECT_SOURCE_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)
+file(GLOB_RECURSE PROJECT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+
+add_library(${PROJECT_NAME} SHARED ${PROJECT_HEADERS} ${PROJECT_SOURCE_HEADERS} ${PROJECT_SOURCES})
 
 include(FetchContent)
 
@@ -101,12 +104,6 @@ endif ()
 if (USE_JSON)
     include_directories(${CMAKE_SOURCE_DIR}/3rdparty/json)
 endif ()
-
-target_sources(${PROJECT_NAME} PRIVATE
-  ${${PROJECT_NAME}_LIST}
-  src/main.cpp
-  src/main.h
-)
 
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
