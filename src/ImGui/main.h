@@ -15,9 +15,4 @@ using PresentSignature = HRESULT(__stdcall*)(IDirect3DDevice9*, const RECT*, con
 using ResetSignature = HRESULT(__stdcall*)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
 using WndProcSignature = HRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM);
 
-kthook::kthook_simple<CTimer__UpdateSignature> CTimerHook{};
-kthook::kthook_signal<PresentSignature> PresentHook{};
-kthook::kthook_signal<ResetSignature> ResetHook{};
-kthook::kthook_simple<WndProcSignature> WndProcHook{};
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

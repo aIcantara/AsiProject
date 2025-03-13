@@ -2,6 +2,11 @@
 
 bool ImGuiEnable{};
 
+kthook::kthook_simple<CTimer__UpdateSignature> CTimerHook{};
+kthook::kthook_signal<PresentSignature> PresentHook{};
+kthook::kthook_signal<ResetSignature> ResetHook{};
+kthook::kthook_simple<WndProcSignature> WndProcHook{};
+
 HRESULT WndProc(const decltype(WndProcHook)& hook, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     if (uMsg == WM_KEYUP) {
         if (wParam == VK_F9)
@@ -79,7 +84,6 @@ void CTimer__Update(const decltype(CTimerHook)& hook) {
     static bool init{};
     if (!init) {
         setD3D9Hooks();
-
         init = { true };
     }
 
