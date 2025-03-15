@@ -1,24 +1,40 @@
 #include "main.h"
 
-void CTimer__Update(const decltype(CTimerHook)& hook) {
-    static bool init{};
-    if (!init && samp::RefNetGame()) {
+void Plugin::MainLoop(const decltype(hookCTimerUpdate)& hook) {
+    static bool inited = false;
+    if (!inited && samp::RefNetGame() && rakhook::initialize()) {
+        StringCompressor::AddReference();
 
-        init = { true };
+        samp::RefInputBox()->AddCommand("cmd", [](const char* param) {
+            samp::RefChat()->AddMessage(0xFFFFFFFF, "Plugin cmd");
+        });
+
+        inited = true;
+    }
+    else {
+
     }
 
-    hook.get_trampoline()();
+    return hook.get_trampoline()();
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
-    switch (ul_reason_for_call) {
+Plugin::Plugin(HMODULE hndl) : hModule(hndl) {
+    using namespace std::placeholders;
+    hookCTimerUpdate.set_cb(std::bind(&Plugin::MainLoop, this, _1));
+    hookCTimerUpdate.install();
+}
+
+std::unique_ptr<Plugin> plugin;
+
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved) {
+    switch (dwReason) {
     case DLL_PROCESS_ATTACH:
-        CTimerHook.set_dest(0x561B10);
-        CTimerHook.set_cb(&CTimer__Update);
-        CTimerHook.install();
+        DisableThreadLibraryCalls(hModule);
+        plugin = std::make_unique<Plugin>(hModule);
         break;
     case DLL_PROCESS_DETACH:
-        CTimerHook.remove();
+        rakhook::destroy();
+        plugin.reset();
         break;
     }
     return TRUE;
