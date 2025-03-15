@@ -104,10 +104,6 @@ if (USE_JSON)
     include_directories(${CMAKE_SOURCE_DIR}/3rdparty/json)
 endif ()
 
-set_target_properties(${PROJECT_NAME}
-  PROPERTIES
-  OUTPUT_NAME ${PROJECT_NAME}
-  SUFFIX ".asi"
-)
-
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME} SUFFIX ".asi")
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
