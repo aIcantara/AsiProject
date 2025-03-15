@@ -1,18 +1,32 @@
 #pragma once
 
-#include <d3d9.h>
 #include <Windows.h>
 #include <memory>
-
-#include <kthook/kthook.hpp>
+#include <d3d9.h>
 
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
 
-using CTimer__UpdateSignature = void(__cdecl*)();
-using PresentSignature = HRESULT(__stdcall*)(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
-using ResetSignature = HRESULT(__stdcall*)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
-using WndProcSignature = HRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM);
+#include <kthook/kthook.hpp>
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#include <RakHook/rakhook.hpp>
+#include <RakNet/StringCompressor.h>
+
+#include <sampapi/CNetGame.h>
+#include <sampapi/CChat.h>
+#include <sampapi/CInput.h>
+
+namespace samp = sampapi::v037r1;
+
+class Plugin {
+private:
+    using CTimerProto = void( __cdecl* )();
+    kthook::kthook_simple<CTimerProto> hookCTimerUpdate{ reinterpret_cast<void*>(0x561B10) };
+    void MainLoop(const decltype(hookCTimerUpdate)& hook);
+public:
+    Plugin(HMODULE hModule);
+    HMODULE hModule;
+};
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
