@@ -3,11 +3,18 @@
 Template ASI project for SA:MP/CR:MP
 
 
-## Build
+## Install
 
 ```bash
 git clone https://github.com/aIcantara/AsiProject.git
 cd AsiProject
+
+```
+
+## Build
+
+```bash
+
 cmake -B build -A Win32
 
 ```
