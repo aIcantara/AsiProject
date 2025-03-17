@@ -9,6 +9,7 @@ set(USE_IMGUI ON)
 set(USE_DXSDK ON)
 set(USE_CURL OFF)
 set(USE_JSON OFF)
+set(USE_KTCORO OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -102,6 +103,10 @@ endif ()
 
 if (USE_JSON)
     include_directories(${CMAKE_SOURCE_DIR}/3rdparty/json)
+endif ()
+
+if (USE_KTCORO)
+    include_directories(${CMAKE_SOURCE_DIR}/ktcoro)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
