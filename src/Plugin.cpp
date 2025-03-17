@@ -1,11 +1,4 @@
-#include "Plugin.h"
-#include <RakHook/rakhook.hpp>
-#include <RakNet/StringCompressor.h>
-#include <sampapi/CNetGame.h>
-#include <sampapi/CChat.h>
-#include <sampapi/CInput.h>
-
-namespace samp = sampapi::v037r1;
+#include "main.h"
 
 Plugin::Plugin(HMODULE hndl) : hModule(hndl) {
     using namespace std::placeholders;
@@ -18,7 +11,7 @@ void Plugin::MainLoop(const decltype(hookCTimerUpdate)& hook) {
         StringCompressor::AddReference();
 
         samp::RefInputBox()->AddCommand("cmd", [](const char* param) {
-            samp::RefChat()->AddMessage(0xFFFFFFFF, "Plugin cmd");
+            samp::RefChat()->AddMessage(-1, "Plugin cmd");
         });
 
         inited = true;

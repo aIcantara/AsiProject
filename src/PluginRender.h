@@ -1,6 +1,5 @@
 #pragma once
 
-#include <kthook/kthook.hpp>
 #include <d3d9.h>
 
 class PluginRender {

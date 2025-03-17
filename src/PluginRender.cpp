@@ -1,10 +1,11 @@
-#include "PluginRender.h"
+#include "main.h"
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+using namespace std::placeholders;
 using InitGameInstance = HWND(__cdecl*)(HINSTANCE);
 kthook::kthook_signal<InitGameInstance> hookGameInstanceInit{ 0x745560 };
 HWND gameHwnd = []() {
@@ -21,7 +22,6 @@ HWND gameHwnd = []() {
 }();
 
 PluginRender::PluginRender() : ImGuiInited(false) {
-    using namespace std::placeholders;
     hookPresent.set_dest(getFunctionAddress(17));
     hookReset.set_dest(getFunctionAddress(16));
     hookPresent.before += std::bind(&PluginRender::onPresent, this, _1, _2, _3, _4, _5, _6);
@@ -32,13 +32,11 @@ PluginRender::PluginRender() : ImGuiInited(false) {
 }
 
 PluginRender::~PluginRender() {
-    if (ImGui::GetCurrentContext()) {
-        hookPresent.remove();
-        hookReset.remove();
-        ImGui_ImplDX9_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
-    }
+    hookPresent.remove();
+    hookReset.remove();
+    ImGui_ImplDX9_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 }
 
 std::uintptr_t PluginRender::findDevice(std::uint32_t len) {
@@ -69,8 +67,6 @@ void* PluginRender::getFunctionAddress(int VTableIndex) {
 
 std::optional<HRESULT> PluginRender::onPresent(const decltype(hookPresent)& hook, IDirect3DDevice9* pDevice, const RECT*, const RECT*, HWND, const RGNDATA*) {
     if (!ImGuiInited) {
-        using namespace std::placeholders;
-
         ImGui::CreateContext();
         ImGui_ImplWin32_Init(gameHwnd);
         ImGui_ImplDX9_Init(pDevice);
@@ -86,6 +82,7 @@ std::optional<HRESULT> PluginRender::onPresent(const decltype(hookPresent)& hook
         hookWndproc.set_dest(latest_wndproc_ptr);
         hookWndproc.set_cb(std::bind(&PluginRender::onWndproc, this, _1, _2, _3, _4, _5));
         hookWndproc.install();
+
         ImGuiInited = true;
     }
 
@@ -118,13 +115,11 @@ std::optional<HRESULT> PluginRender::onLost(const decltype(hookReset)& hook, IDi
 void PluginRender::onReset(const decltype(hookReset)& hook, HRESULT& returnValue, IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* parameters) {}
 
 HRESULT __stdcall PluginRender::onWndproc(const decltype(hookWndproc)& hook, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    switch (uMsg) {
-    case WM_KEYDOWN: {
+    if (uMsg == WM_KEYDOWN) {
         if (wParam == VK_F9 && (HIWORD(lParam) & KF_REPEAT) != KF_REPEAT) {
             ImGuiWindow = { !ImGuiWindow };
+            samp::RefGame()->SetCursorMode(ImGuiWindow ? samp::CURSOR_LOCKCAM : samp::CURSOR_NONE, !ImGuiWindow);
         }
-        break;
-    }
     }
     if (uMsg == WM_CHAR) {
         wchar_t wch;
