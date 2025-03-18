@@ -1,9 +1,9 @@
 #include "main.h"
 #include <memory>
 
-std::unique_ptr<Plugin> plugin;
-
 PluginRender render;
+
+std::unique_ptr<Plugin> plugin;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved) {
     if (dwReason == DLL_PROCESS_ATTACH) {
