@@ -106,7 +106,7 @@ if (USE_JSON)
 endif ()
 
 if (USE_KTCORO)
-    include_directories(${CMAKE_SOURCE_DIR}/ktcoro)
+    include_directories(${CMAKE_SOURCE_DIR}/3rdparty/ktcoro)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
