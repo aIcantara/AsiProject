@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Render.h"
 #include <kthook/kthook.hpp>
-#include "PluginRender.h"
 
 class c_plugin {
 public:
@@ -10,7 +10,7 @@ public:
 
     HMODULE hModule;
 private:
-    c_pluginRender render;
+    c_render render;
 
     bool inited = false;
 

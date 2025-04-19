@@ -15,8 +15,6 @@ void c_plugin::mainloop(const decltype(hookCTimerUpdate)& hook) {
             samp::RefChat()->AddMessage(-1, "plugin cmd");
         });
 
-        samp::RefChat()->AddMessage(-1, "plugin loaded");
-
         inited = true;
     }
 
@@ -31,5 +29,4 @@ c_plugin::c_plugin(HMODULE hndl) : hModule(hndl) {
 
 c_plugin::~c_plugin() {
     rakhook::destroy();
-    render.~c_pluginRender();
 }

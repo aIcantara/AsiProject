@@ -1,4 +1,4 @@
-#include "PluginRender.h"
+#include "Render.h"
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
@@ -7,8 +7,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 using namespace std::placeholders;
 
-using InitGameInstance = HWND(__cdecl*)(HINSTANCE);
-kthook::kthook_signal<InitGameInstance> hookGameInstanceInit{ 0x745560 };
+kthook::kthook_signal<HWND(__cdecl*)(HINSTANCE)> hookGameInstanceInit{ 0x745560 };
 HWND gameHwnd = []() {
     HWND* pHwnd = *reinterpret_cast<HWND**>(0xC17054);
     if (pHwnd != nullptr) {
@@ -22,7 +21,7 @@ HWND gameHwnd = []() {
     }
 }();
 
-void c_pluginRender::pauseScreen(bool state) {
+void c_render::pauseScreen(bool state) {
     static DWORD updateMouseProtection, rsMouseSetPosProtFirst, rsMouseSetPosProtSecond;
 
     if (state) {
@@ -52,7 +51,7 @@ void c_pluginRender::pauseScreen(bool state) {
     }
 }
 
-std::uintptr_t c_pluginRender::findDevice(std::uint32_t len) {
+std::uintptr_t c_render::findDevice(std::uint32_t len) {
     static std::uintptr_t base = [](std::size_t len) {
         std::string pathTo(MAX_PATH, '\0');
         if (auto size = GetSystemDirectoryA(pathTo.data(), MAX_PATH)) {
@@ -74,11 +73,11 @@ std::uintptr_t c_pluginRender::findDevice(std::uint32_t len) {
     return base;
 }
 
-void* c_pluginRender::getFunctionAddress(int VTableIndex) {
+void* c_render::getFunctionAddress(int VTableIndex) {
     return (*reinterpret_cast<void***>(findDevice(0x128000)))[VTableIndex];
 }
 
-std::optional<HRESULT> c_pluginRender::onPresent(const decltype(hookPresent)& hook, IDirect3DDevice9* pDevice, const RECT*, const RECT*, HWND, const RGNDATA*) {
+std::optional<HRESULT> c_render::onPresent(const decltype(hookPresent)& hook, IDirect3DDevice9* pDevice, const RECT*, const RECT*, HWND, const RGNDATA*) {
     if (!ImGuiInited) {
         ImGui::CreateContext();
         ImGui_ImplWin32_Init(gameHwnd);
@@ -92,10 +91,9 @@ std::optional<HRESULT> c_pluginRender::onPresent(const decltype(hookPresent)& ho
         #pragma warning(pop)
         ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 15.f, NULL, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
 
-        auto latest_wndproc_ptr = GetWindowLongPtrA(gameHwnd, GWLP_WNDPROC);
-        hookWndproc.set_dest(latest_wndproc_ptr);
-        hookWndproc.set_cb(std::bind(&c_pluginRender::onWndproc, this, _1, _2, _3, _4, _5));
-        hookWndproc.install();
+        hookWndProc.set_dest(GetWindowLongPtrA(gameHwnd, GWLP_WNDPROC));
+        hookWndProc.set_cb(std::bind(&c_render::onWndProc, this, _1, _2, _3, _4, _5));
+        hookWndProc.install();
 
         ImGuiInited = true;
     }
@@ -121,14 +119,12 @@ std::optional<HRESULT> c_pluginRender::onPresent(const decltype(hookPresent)& ho
     return std::nullopt;
 }
 
-std::optional<HRESULT> c_pluginRender::onLost(const decltype(hookReset)& hook, IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* parameters) {
+std::optional<HRESULT> c_render::onLost(const decltype(hookReset)& hook, IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* parameters) {
     ImGui_ImplDX9_InvalidateDeviceObjects();
     return std::nullopt;
 }
 
-void c_pluginRender::onReset(const decltype(hookReset)& hook, HRESULT& returnValue, IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* parameters) {}
-
-HRESULT __stdcall c_pluginRender::onWndproc(const decltype(hookWndproc)& hook, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+HRESULT c_render::onWndProc(const decltype(hookWndProc)& hook, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     if (uMsg == WM_KEYDOWN) {
         if (wParam == VK_F9 && (HIWORD(lParam) & KF_REPEAT) != KF_REPEAT) {
             ImGuiWindow = { !ImGuiWindow };
@@ -141,20 +137,19 @@ HRESULT __stdcall c_pluginRender::onWndproc(const decltype(hookWndproc)& hook, H
     return hook.get_trampoline()(hwnd, uMsg, wParam, lParam);
 }
 
-c_pluginRender::c_pluginRender() : ImGuiInited(false) {
+c_render::c_render() {
     hookPresent.set_dest(getFunctionAddress(17));
     hookReset.set_dest(getFunctionAddress(16));
-    hookPresent.before += std::bind(&c_pluginRender::onPresent, this, _1, _2, _3, _4, _5, _6);
-    hookReset.before += std::bind(&c_pluginRender::onLost, this, _1, _2, _3);
-    hookReset.after += std::bind(&c_pluginRender::onReset, this, _1, _2, _3, _4);
+    hookPresent.before += std::bind(&c_render::onPresent, this, _1, _2, _3, _4, _5, _6);
+    hookReset.before += std::bind(&c_render::onLost, this, _1, _2, _3);
     hookPresent.install();
     hookReset.install();
 }
 
-c_pluginRender::~c_pluginRender() {
-    hookPresent.remove();
-    hookReset.remove();
-    ImGui_ImplDX9_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
+c_render::~c_render() {
+    if (ImGui::GetCurrentContext()) {
+        ImGui_ImplDX9_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+    }
 }
